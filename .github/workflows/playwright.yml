@@ -27,8 +27,8 @@ jobs:
 
     # Garante o upload do relatório MESMO se os testes falharem
     - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
+      if: always() # Garante que o upload do relatório seja feito mesmo se os testes falharem
       with:
         name: playwright-report
-        path: playwright-report/
+        path: playwright-report
         retention-days: 30
