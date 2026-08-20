@@ -5,6 +5,15 @@ on:
   pull_request:
     branches: [ main, master ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   test:
     timeout-minutes: 60
@@ -14,7 +23,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: lts/* # Utiliza a versão LTS mais recente (Node 22+)
+        node-version: lts/*
 
     - name: Install dependencies
       run: npm install
@@ -25,10 +34,26 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
 
-    # Garante o upload do relatório MESMO se os testes falharem
+    # 1. Mantém o upload do artefato para download seguro (.zip)
     - uses: actions/upload-artifact@v4
-      if: always() # Garante que o upload do relatório seja feito mesmo se os testes falharem
+      if: always()
       with:
         name: playwright-report
-        path: playwright-report
+        path: playwright-report/
         retention-days: 30
+
+    # 2. Configura e publica no GitHub Pages
+    - name: Setup Pages
+      if: always()
+      uses: actions/configure-pages@v5
+
+    - name: Upload HTML report artifact for Pages
+      if: always()
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: playwright-report/
+
+    - name: Deploy to GitHub Pages
+      if: always()
+      id: deployment
+      uses: actions/deploy-pages@v4
