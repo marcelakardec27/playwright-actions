@@ -4,16 +4,17 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+
 jobs:
-  e2e-tests:
+  test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: lts/* # Utiliza a versão LTS mais recente (Node 22+)
 
     - name: Install dependencies
       run: npm install
@@ -23,6 +24,8 @@ jobs:
 
     - name: Run Playwright tests
       run: npx playwright test
+
+    # Garante o upload do relatório MESMO se os testes falharem
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
